@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFOP Cube Timer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+    <meta name="theme-color" content="#1a1a1a">
+</head>
+<body>
+    <header>
+        <h1>🧊 CFOP Timer</h1>
+        <nav>
+            <a href="index.html" class="active">Timer</a>
+            <a href="stats.html">Stats</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="timer-container">
+            <div id="scramble" class="scramble">Click or Space to generate scramble</div>
+            <div id="timer" class="timer-display">00:00.000</div>
+            <div id="status" class="status">Ready</div>
+            <div class="phase-buttons" id="phaseButtons" style="display:none;">
+                <button onclick="addPhase('cross')">Cross</button>
+                <button onclick="addPhase('f2l')">F2L</button>
+                <button onclick="addPhase('oll')">OLL</button>
+                <button onclick="addPhase('pll')">PLL + Finish</button>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="newSession">New Session</button>
+            <button id="exportBtn">Export JSON</button>
+        </div>
+
+        <div id="recentSolves" class="recent-solves"></div>
+    </main>
+
+    <script src="data.js"></script>
+    <script>
+        let startTime = 0;
+        let timerInterval = null;
+        let isReady = false;
+        let currentSolves = [];
+        let currentPhases = [];
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                handleTimer();
+            }
+        });
+
+        document.getElementById('newSession').onclick = () => {
+            currentSolves = [];
+            currentPhases = [];
+            updateRecentSolves();
+            generateScramble();
+            document.getElementById('status').textContent = 'New session';
+        };
+
+        function handleTimer() {
+            if (!startTime) {
+                // Start/ready
+                if (!isReady) {
+                    isReady = true;
+                    document.getElementById('status').textContent = 'RELEASE SPACEBAR';
+                    document.getElementById('status').className = 'status ready';
+                    return;
+                }
+                startTime = performance.now();
+                document.getElementById('status').textContent = 'RUNNING...';
+                document.getElementById('status').className = 'status running';
+                timerInterval = setInterval(updateTimer, 10);
+                document.getElementById('phaseButtons').style.display = 'none';
+            } else {
+                // Stop
+                clearInterval(timerInterval);
+                const elapsed = (performance.now() - startTime) / 1000;
+                currentPhases.push(elapsed.toFixed(3));
+                document.getElementById('timer').textContent = formatTime(elapsed);
+                document.getElementById('status').textContent = 'Splits →';
+                document.getElementById('status').className = 'status stopped';
+                document.getElementById('phaseButtons').style.display = 'flex';
+                startTime = 0;
+                isReady = false;
+            }
+        }
+
+        function updateTimer() {
+            const elapsed = (performance.now() - startTime) / 1000;
+            document.getElementById('timer').textContent = formatTime(elapsed);
+        }
+
+        window.addPhase = function(phase) {
+            const idx = ['cross', 'f2l', 'oll', 'pll'].indexOf(phase);
+            if (currentPhases.length === 5) {
+                saveSolve();
+                generateScramble();
+            }
+        };
+
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            const ms = Math.floor((seconds % 1) * 1000);
+            return `${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}.${ms.toString().padStart(3,'0')}`;
+        }
+
+        function generateScramble() {
+            // Simple 3x3 scrambler (csTimer-inspired)
+            const moves = ['U','D','R','L','F','B'];
+            const mod = ['','\'','2'];
+            let scramble = '';
+            for (let i = 0; i < 20; i++) {
+                const m = moves[Math.floor(Math.random()*6)];
+                const md = mod[Math.floor(Math.random()*3)];
+                scramble += m + md + ' ';
+            }
+            document.getElementById('scramble').textContent = scramble.trim();
+        }
+
+        function saveSolve() {
+            const solve = {
+                date: new Date().toISOString(),
+                scramble: document.getElementById('scramble').textContent,
+                phases: currentPhases.slice(0,5)
+            };
+            currentSolves.push(solve);
+            addSolve(solve);
+            currentPhases = [];
+            updateRecentSolves();
+        }
+
+        function updateRecentSolves() {
+            const list = document.getElementById('recentSolves');
+            list.innerHTML = currentSolves.slice(-5).map(s => `<div>${s.phases[4]}s</div>`).join('');
+        }
+
+        // Init
+        generateScramble();
+        loadSolves();
+        if (window.Notification) Notification.requestPermission();
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
