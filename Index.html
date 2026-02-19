@@ -153,6 +153,13 @@
             list.innerHTML = currentSolves.slice(-5).map(s => `<div>${s.phases[4]}s</div>`).join('');
         }
 
+        function updateLiveStats() {
+            const singles = currentSolves.map(s => parseFloat(s.phases[4])).slice(-12);
+            if (singles.length >= 5) document.getElementById('liveAo5').textContent = calculateAverage(singles.slice(-5), 5).avg.toFixed(2);
+            if (singles.length >= 12) document.getElementById('liveAo12').textContent = calculateAverage(singles.slice(-12), 12).avg.toFixed(2);
+        }
+
+
         // Init
         generateScramble();
         loadSolves();
