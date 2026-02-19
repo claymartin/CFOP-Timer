@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CFOP Cube Timer</title>
     <link rel="manifest" href="manifest.json">
-    <link rel="stylesheet" href="style.css?v=2">
+    <link rel="stylesheet" href="style.css?v=3">
     <meta name="theme-color" content="#1a1a1a">
 </head>
 <body>
@@ -18,17 +18,25 @@
     </header>
 
     <main>
-        <div class="timer-container">
-            <div id="scramble" class="scramble">Click or Space to generate scramble</div>
-            <div id="timer" class="timer-display">00:00.000</div>
-            <div id="status" class="status">Ready</div>
-            <div class="phase-buttons" id="phaseButtons" style="display:none;">
-                <button onclick="addPhase('cross')">Cross</button>
-                <button onclick="addPhase('f2l')">F2L</button>
-                <button onclick="addPhase('oll')">OLL</button>
-                <button onclick="addPhase('pll')">PLL + Finish</button>
+       <div class="timer-section">
+    <div class="timer-container">
+        <!-- existing scramble/timer/status/phase-buttons -->
+    </div>
+    <div class="stats-panel">
+        <h3>Live Stats</h3>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Ao5</h3>
+                <div class="value" id="liveAo5">--</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ao12</h3>
+                <div class="value" id="liveAo12">--</div>
             </div>
         </div>
+    </div>
+</div>
+
 
         <div class="stats-panel liquid-glass">
             <h3>Live Stats</h3>
