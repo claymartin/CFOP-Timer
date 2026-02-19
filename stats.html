@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stats - CFOP Cube Timer</title>
+    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>📊 Stats</h1>
+        <nav>
+            <a href="index.html">Timer</a>
+            <a href="stats.html" class="active">Stats</a>
+        </nav>
+    </header>
+
+    <main>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>Ao5</h3>
+                <div id="ao5">0.00</div>
+                <div id="best5">0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ao12</h3>
+                <div id="ao12">0.00</div>
+                <div id="best12">0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Ao100</h3>
+                <div id="ao100">0.00</div>
+                <div id="best100">0.00</div>
+            </div>
+            <div class="stat-card">
+                <h3>Best Single</h3>
+                <div id="bestSingle">0.00</div>
+            </div>
+        </div>
+
+        <div class="streak-container">
+            <h3>Practice Streak</h3>
+            <canvas id="streakCanvas" width="800" height="120"></canvas>
+        </div>
+
+        <div class="solve-list">
+            <h3>Recent Solves</h3>
+            <div id="solveTable"></div>
+        </div>
+
+        <button onclick="exportSolves()">Export JSON</button>
+        <input type="file" id="importFile" accept=".json" onchange="importSolves(event)">
+    </main>
+
+    <script src="data.js"></script>
+    <script src="streak.js"></script>
+    <script>
+        function updateStats() {
+            const singles = getSingles();
+            const ao5 = calculateAverage(singles.slice(-5), 5);
+            const ao12 = calculateAverage(singles.slice(-12), 12);
+            const ao100 = calculateAverage(singles.slice(-100), 100);
+            
+            document.getElementById('ao5').textContent = ao5.avg.toFixed(2);
+            document.getElementById('best5').textContent = ao5.best.toFixed(2);
+            document.getElementById('ao12').textContent = ao12.avg.toFixed(2);
+            document.getElementById('best12').textContent = ao12.best.toFixed(2);
+            document.getElementById('ao100').textContent = ao100.avg.toFixed(2);
+            document.getElementById('best100').textContent = ao100.best.toFixed(2);
+            document.getElementById('bestSingle').textContent = Math.min(...singles).toFixed(2);
+
+            updateSolveTable();
+            renderStreakCalendar();
+        }
+
+        function updateSolveTable() {
+            const recent = getSolves().slice(-20);
+            const table = document.getElementById('solveTable');
+            table.innerHTML = recent.map((solve, i) => `
+                <div class="solve-row">
+                    <span>${formatTime(solve.phases[4])}</span>
+                    <span>${solve.phases.map(t => formatTime(t)).join(' | ')}</span>
+                </div>
+            `).join('');
+        }
+
+        // Init
+        updateStats();
+    </script>
+</body>
+</html>
